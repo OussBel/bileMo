@@ -8,12 +8,11 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class MobileController extends AbstractController
 {
-    #[Route('/mobile', name: 'app_mobile')]
-    public function index(): JsonResponse
+    #[Route('/api/mobiles', name: 'mobile')]
+    public function getAllMobiles(): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/MobileController.php',
+        return new JsonResponse([
+
         ]);
     }
 }
