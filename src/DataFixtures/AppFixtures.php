@@ -49,16 +49,20 @@ class AppFixtures extends Fixture
         $client->setPhone(33745267826);
         $client->setCreatedAt(new \DateTimeImmutable());
 
+        $manager->persist($client);
+
         for($i=1;$i<20;$i++) {
             $user = new User();
             $user->setFirstName($faker->firstName);
             $user->setLastName($faker->lastName);
+            $user->setRoles(['ROLE_USER']);
             $user->setEmail($faker->unique()->email);
-            $user->setPassword($this->passwordHasher($user, 'password123'));
+            $user->setPassword($this->passwordHasher->hashPassword($user, 'password123'));
             $user->setClient($client);
+
+            $manager->persist($user);
         }
 
-        $manager->persist($client);
 
         $manager->flush();
     }
