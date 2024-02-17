@@ -2,18 +2,35 @@
 
 namespace App\Controller;
 
+use App\Entity\Mobile;
+use App\Repository\MobileRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class MobileController extends AbstractController
 {
-    #[Route('/mobile', name: 'app_mobile')]
-    public function index(): JsonResponse
+    /**
+     * @param MobileRepository $mobileRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
+    #[Route('/api/mobiles', name: 'mobiles', methods: ['GET'])]
+    public function getAllMobiles(MobileRepository $mobileRepository,
+                                  SerializerInterface $serializer): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/MobileController.php',
-        ]);
+        $mobileList = $mobileRepository->findAll();
+
+        $jsonMobileList = $serializer->serialize($mobileList, 'json');
+        return new JsonResponse($jsonMobileList, Response::HTTP_OK, [],true);
+    }
+
+    #[Route('/api/mobiles/{id}', name: 'detailMobile', methods: ['GET'])]
+    public function getDetailMobile(Mobile $mobile, SerializerInterface $serializer): JsonResponse
+    {
+        $jsonMobile = $serializer->serialize($mobile, 'json');
+        return new JsonResponse($jsonMobile, Response::HTTP_OK, [],true);
     }
 }
