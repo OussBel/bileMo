@@ -12,6 +12,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class MobileController extends AbstractController
 {
+    /**
+     * @param MobileRepository $mobileRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
     #[Route('/api/mobiles', name: 'mobiles', methods: ['GET'])]
     public function getAllMobiles(MobileRepository $mobileRepository,
                                   SerializerInterface $serializer): JsonResponse

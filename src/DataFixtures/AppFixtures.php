@@ -13,13 +13,15 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AppFixtures extends Fixture
 {
 
-    public function __construct(private readonly UserPasswordHasherInterface $passwordHasher) {}
+    public function __construct(private readonly UserPasswordHasherInterface $passwordHasher)
+    {
+    }
 
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create();
 
-        for($i=1; $i <20;$i++) {
+        for ($i = 1; $i < 20; $i++) {
             $mobile = new Mobile();
             $mobile
                 ->setBrand($faker->company)
@@ -40,7 +42,7 @@ class AppFixtures extends Fixture
         $client = new Client();
         $client->setEmail('client@example.com');
         $client->setRoles(['ROLE_USER']);
-        $client->setPassword($this->passwordHasher->hashPassword($client,'password123'));
+        $client->setPassword($this->passwordHasher->hashPassword($client, 'password123'));
         $client->setFirstName('Emmanuel');
         $client->setLastName('Doen');
         $client->setAddress('123 rue Jean Jaures 75016 Paris');
@@ -51,7 +53,7 @@ class AppFixtures extends Fixture
 
         $manager->persist($client);
 
-        for($i=1;$i<20;$i++) {
+        for ($i = 1; $i < 20; $i++) {
             $user = new User();
             $user->setFirstName($faker->firstName);
             $user->setLastName($faker->lastName);

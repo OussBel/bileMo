@@ -40,6 +40,7 @@ class ClientRepository extends ServiceEntityRepository implements PasswordUpgrad
         $this->getEntityManager()->flush();
     }
 
+
 //    /**
 //     * @return Client[] Returns an array of Client objects
 //     */
