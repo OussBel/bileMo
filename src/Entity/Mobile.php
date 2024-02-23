@@ -20,32 +20,17 @@ class Mobile
     #[ORM\Column(length: 255)]
     private ?string $modelName = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $operatingSystem = null;
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $cellularTechnology = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?int $memoryStorage = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $connectivityTechnoloy = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?int $screenSize = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $wirelessNetworkTechnology = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $releaseDate = null;
-
-    #[ORM\Column]
-    private ?int $batteryAutonomy = null;
-
-    #[ORM\Column]
-    private ?int $ramSize = null;
+    private ?string $wirelessNetwork = null;
 
     public function getId(): ?int
     {
@@ -76,26 +61,14 @@ class Mobile
         return $this;
     }
 
-    public function getOperatingSystem(): ?string
+    public function getDescription(): ?string
     {
-        return $this->operatingSystem;
+        return $this->description;
     }
 
-    public function setOperatingSystem(string $operatingSystem): static
+    public function setDescription(string $description): static
     {
-        $this->operatingSystem = $operatingSystem;
-
-        return $this;
-    }
-
-    public function getCellularTechnology(): ?string
-    {
-        return $this->cellularTechnology;
-    }
-
-    public function setCellularTechnology(string $cellularTechnology): static
-    {
-        $this->cellularTechnology = $cellularTechnology;
+        $this->description = $description;
 
         return $this;
     }
@@ -112,18 +85,6 @@ class Mobile
         return $this;
     }
 
-    public function getConnectivityTechnoloy(): ?string
-    {
-        return $this->connectivityTechnoloy;
-    }
-
-    public function setConnectivityTechnoloy(string $connectivityTechnoloy): static
-    {
-        $this->connectivityTechnoloy = $connectivityTechnoloy;
-
-        return $this;
-    }
-
     public function getScreenSize(): ?int
     {
         return $this->screenSize;
@@ -136,50 +97,14 @@ class Mobile
         return $this;
     }
 
-    public function getWirelessNetworkTechnology(): ?string
+    public function getWirelessNetwork(): ?string
     {
-        return $this->wirelessNetworkTechnology;
+        return $this->wirelessNetwork;
     }
 
-    public function setWirelessNetworkTechnology(string $wirelessNetworkTechnology): static
+    public function setWirelessNetwork(string $wirelessNetwork): static
     {
-        $this->wirelessNetworkTechnology = $wirelessNetworkTechnology;
-
-        return $this;
-    }
-
-    public function getReleaseDate(): ?\DateTimeInterface
-    {
-        return $this->releaseDate;
-    }
-
-    public function setReleaseDate(\DateTimeInterface $releaseDate): static
-    {
-        $this->releaseDate = $releaseDate;
-
-        return $this;
-    }
-
-    public function getBatteryAutonomy(): ?int
-    {
-        return $this->batteryAutonomy;
-    }
-
-    public function setBatteryAutonomy(int $batteryAutonomy): static
-    {
-        $this->batteryAutonomy = $batteryAutonomy;
-
-        return $this;
-    }
-
-    public function getRamSize(): ?int
-    {
-        return $this->ramSize;
-    }
-
-    public function setRamSize(int $ramSize): static
-    {
-        $this->ramSize = $ramSize;
+        $this->wirelessNetwork = $wirelessNetwork;
 
         return $this;
     }
