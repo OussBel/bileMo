@@ -5,29 +5,41 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
+
+    /**
+     * @param UserService $userService
+     */
+    public function __construct(private readonly UserService $userService)
+    {
+    }
+
     /**
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
-    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer,
+                                Request        $request): JsonResponse
     {
-        $userList = $userRepository->findAll();
+        $loggedInClient = $this->userService->validateLoggedInClient();
+
+        $page = $request->get('page',1);
+        $limit = $request->get('limit', 3);
+        $userList = $userRepository->findUsersByClient($loggedInClient, $page, $limit);
         $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
@@ -39,9 +51,14 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
-    public function getDetailUser(User $user, SerializerInterface $serializer, Security $security): JsonResponse
+    public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
     {
-        $client = $security->getUser();
+        $validationResult = $this->userService->validateClientAccess($user);
+
+        if ($validationResult instanceof JsonResponse) {
+            return $validationResult;
+        }
+
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
@@ -53,8 +70,14 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
-    public function deleteMobile(User $user, EntityManagerInterface $em): JsonResponse
+    public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
+        $validationResult = $this->userService->validateClientAccess($user);
+
+        if ($validationResult instanceof JsonResponse) {
+            return $validationResult;
+        }
+
         $em->remove($user);
         $em->flush();
 
@@ -67,6 +90,7 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $em
      * @param ClientRepository $clientRepository
      * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
      * @return JsonResponse
      */
     #[Route('/api/users', name: 'createUser', methods: ['POST'])]
@@ -76,12 +100,13 @@ class UserController extends AbstractController
                                UrlGeneratorInterface  $urlGenerator,
                                ValidatorInterface     $validator): JsonResponse
     {
+
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
 
         $errors = $validator->validate($user);
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'),
-                JsonResponse::HTTP_BAD_REQUEST, [], true);
+                Response::HTTP_BAD_REQUEST, [], true);
         }
 
         $content = $request->toArray();
@@ -96,35 +121,6 @@ class UserController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['location' => $location], true);
-    }
-
-    /**
-     * @param Request $request
-     * @param SerializerInterface $serializer
-     * @param EntityManagerInterface $em
-     * @param ClientRepository $clientRepository
-     * @param User $currentUser
-     * @param UrlGeneratorInterface $urlGenerator
-     * @return JsonResponse
-     */
-    #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
-    public function updateUser(Request                $request, SerializerInterface $serializer,
-                               EntityManagerInterface $em,
-                               ClientRepository       $clientRepository,
-                               User                   $currentUser,
-                               UrlGeneratorInterface  $urlGenerator): JsonResponse
-    {
-        $updatedUser = $serializer->deserialize($request->getContent(), User::class, 'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
-
-        $content = $request->toArray();
-        $idClient = $content["idClient"] ?? -1;
-        $updatedUser->setClient($clientRepository->find($idClient));
-
-        $em->persist($updatedUser);
-        $em->flush();
-
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
 }

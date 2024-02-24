@@ -21,20 +21,19 @@ class MobileRepository extends ServiceEntityRepository
         parent::__construct($registry, Mobile::class);
     }
 
-    //    /**
-    //     * @return Mobile[] Returns an array of Mobile objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('m')
-    //            ->andWhere('m.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('m.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Mobile[] Returns an array of Mobile objects
+     */
+    public function findAllWithPagination($page, $limit): array
+    {
+
+        return $this->createQueryBuilder('m')
+            ->orderBy('m.id', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 
     //    public function findOneBySomeField($value): ?Mobile
     //    {
