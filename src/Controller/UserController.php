@@ -7,6 +7,7 @@ use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class UserController extends AbstractController
 {
@@ -29,17 +32,32 @@ class UserController extends AbstractController
     /**
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
+     * @param Request $request
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
-    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer,
-                                Request        $request): JsonResponse
+    public function getAllUsers(UserRepository         $userRepository,
+                                SerializerInterface    $serializer,
+                                Request                $request,
+                                TagAwareCacheInterface $cachePool): JsonResponse
     {
         $loggedInClient = $this->userService->validateLoggedInClient();
 
-        $page = $request->get('page',1);
+        $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
-        $userList = $userRepository->findUsersByClient($loggedInClient, $page, $limit);
+
+        $idCache = "getAllUsers" . $page . "-" . $limit;
+
+        $userList = $cachePool->get($idCache,
+            function (ItemInterface $item) use ($userRepository, $page, $limit, $loggedInClient) {
+                echo("L'élément n'est pas encore en cache");
+                $item->tag('UsersCache');
+                $item->expiresAfter(3600);
+                return $userRepository->findUsersByClient($loggedInClient, $page, $limit);
+            });
+
         $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
@@ -94,7 +112,8 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/api/users', name: 'createUser', methods: ['POST'])]
-    public function createUser(Request                $request, SerializerInterface $serializer,
+    public function createUser(Request                $request,
+                               SerializerInterface    $serializer,
                                EntityManagerInterface $em,
                                ClientRepository       $clientRepository,
                                UrlGeneratorInterface  $urlGenerator,
