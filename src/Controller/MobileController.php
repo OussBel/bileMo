@@ -42,7 +42,7 @@ class MobileController extends AbstractController
             function (ItemInterface $item) use ($mobileRepository, $page, $limit) {
                 echo("L'élément n'est pas encore en cache");
                 $item->tag('MobilesCache');
-                $item->expiresAfter(3600);
+                $item->expiresAfter(300);
                 return $mobileRepository->findAllWithPagination($page, $limit);
             });
 

@@ -7,20 +7,47 @@ use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Hateoas\Configuration\Annotation as Hateoas;
+use OpenApi\Attributes as OA;
 
 class UserController extends AbstractController
 {
+
+    #[Route('/api/books', name: 'books', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la liste des livres',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Book::class, groups: ['getBooks']))
+        )
+    )]
+    #[OA\Parameter(
+        name: 'page',
+        description: "La page que l'on veut récupérer",
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        description: "Le nombre d'éléments que l'on veut récupérer",
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Tag(name: 'Books')]
 
     /**
      * @param UserService $userService
@@ -54,11 +81,11 @@ class UserController extends AbstractController
             function (ItemInterface $item) use ($userRepository, $page, $limit, $loggedInClient) {
                 echo("L'élément n'est pas encore en cache");
                 $item->tag('UsersCache');
-                $item->expiresAfter(3600);
+                $item->expiresAfter(300);
                 return $userRepository->findUsersByClient($loggedInClient, $page, $limit);
             });
-
-        $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUserList = $serializer->serialize($userList, 'json', $context);
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
@@ -77,7 +104,8 @@ class UserController extends AbstractController
             return $validationResult;
         }
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
@@ -112,12 +140,13 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/api/users', name: 'createUser', methods: ['POST'])]
-    public function createUser(Request                $request,
-                               SerializerInterface    $serializer,
-                               EntityManagerInterface $em,
-                               ClientRepository       $clientRepository,
-                               UrlGeneratorInterface  $urlGenerator,
-                               ValidatorInterface     $validator): JsonResponse
+    public function createUser(Request                     $request,
+                               SerializerInterface         $serializer,
+                               EntityManagerInterface      $em,
+                               ClientRepository            $clientRepository,
+                               UrlGeneratorInterface       $urlGenerator,
+                               ValidatorInterface          $validator,
+                               UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
 
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -131,11 +160,15 @@ class UserController extends AbstractController
         $content = $request->toArray();
         $idClient = $content["idClient"] ?? -1;
         $user->setClient($clientRepository->find($idClient));
+        $user->setRoles(['ROLE_USER']);
+        $plainPassword = $content['password'];
+        $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
 
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()],
             UrlGeneratorInterface::ABSOLUTE_URL);
 

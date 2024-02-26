@@ -59,7 +59,11 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setLastName($faker->lastName)
                 ->setFirstName($faker->lastName)
-                ->setClient($client);
+                ->setClient($client)
+                ->setEmail($faker->unique()->email())
+                ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
+                ->setRoles(['ROLE_USER'])
+            ;
 
             $manager->persist($user);
         }
