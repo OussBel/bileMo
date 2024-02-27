@@ -5,12 +5,43 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href = @Hateoas\Route(
+ *          "detailUser",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers")
+ * )
+ *
+ * @Hateoas\Relation(
+ *      "delete",
+ *      href = @Hateoas\Route(
+ *          "deleteUser",
+ *          parameters = { "id" = "expr(object.getId())" },
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers"),
+ * )
+ *
+ * * @Hateoas\Relation(
+ *      "create",
+ *      href = @Hateoas\Route(
+ *          "createUser",
+ *          parameters = {}
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers"),
+ * )
+ */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity('email', message: 'L\'email existe déjà.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -29,18 +60,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Groups(['getUsers'])]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
+    #[Assert\Length(min: 9, max: 255,
+        minMessage: 'Le prénom  doit faire au moins {{ limit }} caractères.',
+        maxMessage: 'Le prénom ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $firstName = null;
 
+    #[ORM\Column(length: 255, unique: true)]
+    #[Groups(['getUsers'])]
+    #[Assert\NotBlank(message: "L'émail est obligatoire")]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire')]
+    #[Assert\Length(min: 6, max: 255,
+        minMessage: 'Le mot de passe  doit faire au moins {{ limit }} caractères.',
+        maxMessage: 'Le mot de passe ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $password = null;
     #[ORM\ManyToOne(inversedBy: 'user')]
     #[Groups(['getUsers'])]
     private ?Client $client = null;
 
-    #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['getUsers'])]
-    private ?string $email = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $password = null;
 
     /**
      * @var list<string> The user roles
@@ -136,7 +176,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
 }

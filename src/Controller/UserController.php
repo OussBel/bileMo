@@ -9,6 +9,7 @@ use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,34 +21,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use Hateoas\Configuration\Annotation as Hateoas;
 use OpenApi\Attributes as OA;
+
+
 
 class UserController extends AbstractController
 {
-
-    #[Route('/api/books', name: 'books', methods: ['GET'])]
-    #[OA\Response(
-        response: 200,
-        description: 'Retourne la liste des livres',
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Book::class, groups: ['getBooks']))
-        )
-    )]
-    #[OA\Parameter(
-        name: 'page',
-        description: "La page que l'on veut récupérer",
-        in: 'query',
-        schema: new OA\Schema(type: 'int')
-    )]
-    #[OA\Parameter(
-        name: 'limit',
-        description: "Le nombre d'éléments que l'on veut récupérer",
-        in: 'query',
-        schema: new OA\Schema(type: 'int')
-    )]
-    #[OA\Tag(name: 'Books')]
 
     /**
      * @param UserService $userService
@@ -65,6 +44,27 @@ class UserController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la liste des livres',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: User::class, groups: ['getUsers']))
+        )
+    )]
+    #[OA\Parameter(
+        name: 'page',
+        description: "La page que l'on veut récupérer",
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        description: "Le nombre d'éléments que l'on veut récupérer",
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Tag(name: 'Users')]
     public function getAllUsers(UserRepository         $userRepository,
                                 SerializerInterface    $serializer,
                                 Request                $request,
@@ -79,7 +79,6 @@ class UserController extends AbstractController
 
         $userList = $cachePool->get($idCache,
             function (ItemInterface $item) use ($userRepository, $page, $limit, $loggedInClient) {
-                echo("L'élément n'est pas encore en cache");
                 $item->tag('UsersCache');
                 $item->expiresAfter(300);
                 return $userRepository->findUsersByClient($loggedInClient, $page, $limit);
@@ -137,6 +136,7 @@ class UserController extends AbstractController
      * @param ClientRepository $clientRepository
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @param UserPasswordHasherInterface $passwordHasher
      * @return JsonResponse
      */
     #[Route('/api/users', name: 'createUser', methods: ['POST'])]

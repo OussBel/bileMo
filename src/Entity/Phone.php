@@ -2,12 +2,23 @@
 
 namespace App\Entity;
 
-use App\Repository\MobileRepository;
+use App\Repository\PhoneRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation as Hateoas;
 
-#[ORM\Entity(repositoryClass: MobileRepository::class)]
-class Mobile
+
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href = @Hateoas\Route(
+ *          "detailPhone",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ * )
+ */
+#[ORM\Entity(repositoryClass: PhoneRepository::class)]
+class Phone
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
