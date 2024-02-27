@@ -1,0 +1,27 @@
+@startuml
+
+participant Client
+participant Phone
+participant User
+
+Client -> Phone: View All Phones
+activate Phone
+Phone --> Client: List of Phones
+deactivate Phone
+
+Client -> User: View All Users
+activate User
+User --> Client: List of Users
+deactivate User
+
+Client -> User: Create New User
+activate User
+User --> Client: New User Created
+deactivate User
+
+Client -> User: Delete User
+activate User
+User --> Client: User Deleted
+deactivate User
+
+@enduml

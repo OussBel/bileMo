@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Client;
-use App\Entity\Mobile;
+use App\Entity\Phone;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -30,9 +30,9 @@ class AppFixtures extends Fixture
         $faker = Factory::create();
 
         for ($i = 1; $i < 20; $i++) {
-            $mobile = new Mobile();
+            $phone = new Phone();
 
-            $mobile->setBrand($faker->company)
+            $phone->setBrand($faker->company)
                 ->setModelName($faker->word)
                 ->setMemoryStorage($faker->numberBetween(32, 256))
                 ->setScreenSize($faker->randomFloat(2, 4, 7))
@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
                 ->setWirelessNetwork('Wifi');
 
 
-            $manager->persist($mobile);
+            $manager->persist($phone);
         }
 
         $client = new Client();
@@ -59,7 +59,11 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setLastName($faker->lastName)
                 ->setFirstName($faker->lastName)
-                ->setClient($client);
+                ->setClient($client)
+                ->setEmail($faker->unique()->email())
+                ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
+                ->setRoles(['ROLE_USER'])
+            ;
 
             $manager->persist($user);
         }

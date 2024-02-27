@@ -1,0 +1,81 @@
+@startuml
+
+class Client {
+    +id
+    +email
+    +roles
+    +password
+    +firstName
+    +lastName
+    +siret
+    +address
+    +phone
+
+    +getId()
+    +getEmail()
+    +setEmail(email)
+    +getUserIdentifier()
+    +getUsername()
+    +getRoles()
+    +setRoles(roles)
+    +getPassword()
+    +setPassword(password)
+    +eraseCredentials()
+    +getFirstName()
+    +setFirstName(firstName)
+    +getLastName()
+    +setLastName(lastName)
+    +getSiret()
+    +setSiret(siret)
+    +getAddress()
+    +setAddress(address)
+    +getPhone()
+    +setPhone(phone)
+    +getUser()
+    +addUser(user)
+    +removeUser(user)
+}
+
+class Phone {
+    +id
+    +brand
+    +modelName
+    +description
+    +memoryStorage
+    +screenSize
+    +wirelessNetwork
+
+    +getId()
+    +getBrand()
+    +setBrand(brand)
+    +getModelName()
+    +setModelName(modelName)
+    +getDescription()
+    +setDescription(description)
+    +getMemoryStorage()
+    +setMemoryStorage(memoryStorage)
+    +getScreenSize()
+    +setScreenSize(screenSize)
+    +getWirelessNetwork()
+    +setWirelessNetwork(wirelessNetwork)
+}
+
+class User {
+    +id
+    +username
+    +password
+    +client
+
+    +getId()
+    +getUsername()
+    +setUsername(username)
+    +getPassword()
+    +setPassword(password)
+    +getClient()
+    +setClient(client)
+}
+
+Client "1" --> "*" User : contient
+User "1" --> "1" Client : appartient à
+
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+
+actor Client
+
+rectangle System {
+    usecase ViewAllPhones
+    usecase ViewAllUsers
+    usecase CreateNewUser
+    usecase DeleteUser
+    usecase ViewAsinglePhone
+}
+
+Client --> (ViewAllPhones)
+Client --> (ViewAsinglePhone)
+Client --> (ViewAllUsers)
+Client --> (CreateNewUser)
+Client --> (DeleteUser)
+
+
+
+
+@enduml
