@@ -21,9 +21,9 @@ Prérequis:
 
   - PHP 8.2.4
   - MySQL ou Mariadb
-  - Composer version 2.3.10
+  - Composer version  >=2.3.10
   - Symfony CLI 5.6.1
-  - Symfony 6.3.6
+  - Symfony 6.4
   - Extension OpenSSL
 
 
