@@ -50,6 +50,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['getUsers'])]
     private ?int $id = null;
 
+    #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['getUsers'])]
+    #[Assert\NotBlank(message: "L'émail est obligatoire")]
+    private ?string $email = null;
+
+    /**
+     * @var list<string> The user roles
+     */
+    #[ORM\Column]
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire')]
+    #[Assert\Length(min: 6, max: 255,
+        minMessage: 'Le mot de passe  doit faire au moins {{ limit }} caractères.',
+        maxMessage: 'Le mot de passe ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $password = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['getUsers'])]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
+    #[Assert\Length(min: 1, max: 255,
+        minMessage: 'Le prénom  doit faire au moins {{ limit }} caractères.',
+        maxMessage: 'Le prénom ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $firstName = null;
+
     #[ORM\Column(length: 255)]
     #[Groups(['getUsers'])]
     #[Assert\NotBlank(message: 'Le nom de famille est obligatoire')]
@@ -60,37 +89,118 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Groups(['getUsers'])]
-    #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
-    #[Assert\Length(min: 9, max: 255,
-        minMessage: 'Le prénom  doit faire au moins {{ limit }} caractères.',
-        maxMessage: 'Le prénom ne doit pas dépasser {{ limit }} caractères.')]
-    private ?string $firstName = null;
+    #[Assert\NotBlank(message: 'L\'adresse est obligatoire')]
+    #[Assert\Length(max: 255, maxMessage: 'L\'adresse ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $address = null;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column]
     #[Groups(['getUsers'])]
-    #[Assert\NotBlank(message: "L'émail est obligatoire")]
-    private ?string $email = null;
+    #[Assert\NotBlank(message: 'Le SIREN est obligatoire')]
+    #[Assert\Type(type: 'integer', message: 'Le SIREN doit être un nombre entier.')]
+    private ?int $siren = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire')]
-    #[Assert\Length(min: 6, max: 255,
-        minMessage: 'Le mot de passe  doit faire au moins {{ limit }} caractères.',
-        maxMessage: 'Le mot de passe ne doit pas dépasser {{ limit }} caractères.')]
-    private ?string $password = null;
+    #[ORM\Column]
+    #[Groups(['getUsers'])]
+    #[Assert\NotBlank(message: 'Le numéro de mobile est obligatoire')]
+    #[Assert\Type(type: 'integer', message: 'Le numéro de mobile doit être un nombre entier.')]
+    private ?int $mobile = null;
+
     #[ORM\ManyToOne(inversedBy: 'user')]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups(['getUsers'])]
     private ?Client $client = null;
-
-
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername(): string {
+        return $this->getUserIdentifier();
+    }
+
+    /**
+     * @see UserInterface
+     * @return list<string>
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): static
+    {
+        $this->firstName = $firstName;
+
+        return $this;
     }
 
     public function getLastName(): ?string
@@ -105,14 +215,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getFirstName(): ?string
+    public function getAddress(): ?string
     {
-        return $this->firstName;
+        return $this->address;
     }
 
-    public function setFirstName(string $firstName): static
+    public function setAddress(string $address): static
     {
-        $this->firstName = $firstName;
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getSiren(): ?int
+    {
+        return $this->siren;
+    }
+
+    public function setSiren(int $siren): static
+    {
+        $this->siren = $siren;
+
+        return $this;
+    }
+
+    public function getMobile(): ?int
+    {
+        return $this->mobile;
+    }
+
+    public function setMobile(int $mobile): static
+    {
+        $this->mobile = $mobile;
 
         return $this;
     }
@@ -128,55 +262,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
-
-    public function eraseCredentials()
-    {
-        // TODO: Implement eraseCredentials() method.
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return (string)$this->email;
-    }
-
 }

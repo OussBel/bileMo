@@ -1,6 +1,9 @@
 @startuml
 
 actor Client
+rectangle "Authentication System" {
+    usecase Authenticate
+}
 
 rectangle System {
     usecase ViewAllPhones
@@ -10,13 +13,11 @@ rectangle System {
     usecase ViewAsinglePhone
 }
 
-Client --> (ViewAllPhones)
-Client --> (ViewAsinglePhone)
-Client --> (ViewAllUsers)
-Client --> (CreateNewUser)
-Client --> (DeleteUser)
-
-
-
+Client --> Authenticate
+Authenticate --> (ViewAllPhones)
+Authenticate --> (ViewAsinglePhone)
+Authenticate --> (ViewAllUsers)
+Authenticate --> (CreateNewUser)
+Authenticate --> (DeleteUser)
 
 @enduml

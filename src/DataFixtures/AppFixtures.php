@@ -29,6 +29,7 @@ class AppFixtures extends Fixture
     {
         $faker = Factory::create();
 
+        //Ajout des téléphones
         for ($i = 1; $i < 20; $i++) {
             $phone = new Phone();
 
@@ -43,27 +44,39 @@ class AppFixtures extends Fixture
             $manager->persist($phone);
         }
 
-        $client = new Client();
-        $client->setFirstName('client1')
-            ->setLastName('lastName')
-            ->setRoles(['ROLE_USER'])
-            ->setEmail('client@bilemo.com')
-            ->setSiret(891456787)
-            ->setAddress('20 avenue Jean Jaures 75016 Paris France')
+        //Ajout d'un client (Entreprise)
+        $enterprise = new Client();
+        $enterprise->setName($faker->company)
+            ->setDescription($faker->paragraph);
+
+        $manager->persist($enterprise);
+
+        // Création d'un utilisateur qui a un role client qui lui permet d'ajouter ou supprimer un autre utilisateur
+        $client = new User();
+        $client->setLastName('Doe')
+            ->setFirstName('John')
+            ->setSiren(356879999)
+            ->setMobile(187954123)
+            ->setAddress($faker->address)
+            ->setEmail('client@bilemo.fr')
             ->setPassword($this->passwordHasher->hashPassword($client, 'password'))
-            ->setPhone(111111111);
+            ->setRoles(['ROLE_ADMIN'])
+            ->setClient($enterprise);
 
         $manager->persist($client);
 
+        // Ajout des utilisateurs
         for ($i = 1; $i < 20; $i++) {
             $user = new User();
             $user->setLastName($faker->lastName)
                 ->setFirstName($faker->lastName)
-                ->setClient($client)
+                ->setSiren(356784224)
+                ->setMobile(18791244)
+                ->setAddress($faker->address)
                 ->setEmail($faker->unique()->email())
                 ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
                 ->setRoles(['ROLE_USER'])
-            ;
+                ->setClient($enterprise);
 
             $manager->persist($user);
         }

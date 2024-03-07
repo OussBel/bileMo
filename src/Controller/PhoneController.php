@@ -27,7 +27,7 @@ class PhoneController extends AbstractController
 
     #[OA\Response(
         response: 200,
-        description: 'Retourne la liste des livres',
+        description: 'Retourne la liste des téléphones',
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Phone::class))
@@ -53,11 +53,11 @@ class PhoneController extends AbstractController
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
-        $idCache = "getAllUsers" . $page . "-" . $limit;
+        $idCache = "getAllPhones" . $page . "-" . $limit;
 
         $phoneList = $cachePool->get($idCache,
             function (ItemInterface $item) use ($phoneRepository, $page, $limit) {
-                $item->tag('UsersCache');
+                $item->tag('PhonesCache');
                 $item->expiresAfter(300);
                 return $phoneRepository->findAllWithPagination( $page, $limit);
             });
