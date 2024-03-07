@@ -5,13 +5,12 @@ namespace App\Entity;
 use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
-class Client implements UserInterface, PasswordAuthenticatedUserInterface
+class Client
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,41 +18,13 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['getUsers'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['getUsers'])]
-    private ?string $email = null;
-
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
-
-    /**
-     * @var ?string The hashed password
-     */
-    #[ORM\Column]
-    private ?string $password = null;
-
     #[ORM\Column(length: 255)]
     #[Groups(['getUsers'])]
-    private ?string $firstName = null;
+    private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     #[Groups(['getUsers'])]
-    private ?string $lastName = null;
-
-    #[ORM\Column]
-    #[Groups(['getUsers'])]
-    private ?int $siret = null;
-
-    #[ORM\Column(length: 255)]
-    #[Groups(['getUsers'])]
-    private ?string $address = null;
-
-    #[ORM\Column]
-    #[Groups(['getUsers'])]
-    private ?int $phone = null;
+    private ?string $description = null;
 
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'client')]
     private Collection $user;
@@ -68,136 +39,26 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    public function getName(): ?string
     {
-        return $this->email;
+        return $this->name;
     }
 
-    public function setEmail(string $email): static
+    public function setName(string $name): static
     {
-        $this->email = $email;
+        $this->name = $name;
 
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
-    public function getUserIdentifier(): string
+    public function getDescription(): ?string
     {
-        return (string) $this->email;
+        return $this->description;
     }
 
-    public function getUsername(): string {
-        return $this->getUserIdentifier();
-    }
-
-    /**
-     * @see UserInterface
-     *
-     * @return list<string>
-     */
-    public function getRoles(): array
+    public function setDescription(string $description): static
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
-
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
-    }
-
-    public function getFirstName(): ?string
-    {
-        return $this->firstName;
-    }
-
-    public function setFirstName(string $firstName): static
-    {
-        $this->firstName = $firstName;
-
-        return $this;
-    }
-
-    public function getLastName(): ?string
-    {
-        return $this->lastName;
-    }
-
-    public function setLastName(string $lastName): static
-    {
-        $this->lastName = $lastName;
-
-        return $this;
-    }
-
-    public function getSiret(): ?int
-    {
-        return $this->siret;
-    }
-
-    public function setSiret(int $siret): static
-    {
-        $this->siret = $siret;
-
-        return $this;
-    }
-
-    public function getAddress(): ?string
-    {
-        return $this->address;
-    }
-
-    public function setAddress(string $address): static
-    {
-        $this->address = $address;
-
-        return $this;
-    }
-
-    public function getPhone(): ?int
-    {
-        return $this->phone;
-    }
-
-    public function setPhone(int $phone): static
-    {
-        $this->phone = $phone;
+        $this->description = $description;
 
         return $this;
     }
