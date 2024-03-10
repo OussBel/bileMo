@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Client;
 use App\Entity\User;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
@@ -71,6 +72,27 @@ class UserController extends AbstractController
                 $item->expiresAfter(300);
                 return $userRepository->findUsersWithPagination($page, $limit);
             });
+
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUserList = $serializer->serialize($userList, 'json', $context);
+
+        return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
+
+    }
+
+    #[Route('/api/users-client/{client}', name: 'users_client', methods: ['GET'])]
+    public function getAllUsersByClient(UserRepository         $userRepository,
+                                        Client                 $client,
+                                        Request                $request,
+                                        TagAwareCacheInterface $cachePool,
+                                        SerializerInterface    $serializer): JsonResponse
+    {
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+
+        $idCache = 'getAllUsers' . $page . '-' . $limit;
+
+        $userList = $userRepository->findUsersByClientWithPagination($client, $page, $limit);
 
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUserList = $serializer->serialize($userList, 'json', $context);

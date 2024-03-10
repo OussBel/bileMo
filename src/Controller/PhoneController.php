@@ -61,7 +61,7 @@ class PhoneController extends AbstractController
                 $item->expiresAfter(300);
                 return $phoneRepository->findAllWithPagination( $page, $limit);
             });
-        $phoneList = $phoneRepository->findAllWithPagination($page, $limit);
+       // $phoneList = $phoneRepository->findAllWithPagination($page, $limit);
         $jsonPhoneList = $serializer->serialize($phoneList, 'json');
 
         return new JsonResponse($jsonPhoneList, Response::HTTP_OK, [], true);
